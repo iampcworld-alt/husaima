@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mathrasathul Husaima | Student Portal</title>
+<meta name="description" content="Mathrasathul Husaima student portal — admissions, gallery, events, leave requests, and fee payments.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Tailwind (utility classes used inside login/dashboard/modal components) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- jsPDF for the payment receipt -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="bg-glow-ball"></div>
+
+<!-- ===================== ROLE BARS ===================== -->
+<div class="role-bar admin" id="adminBar">
+  <span>🛠️ <strong>Admin Mode:</strong> full CMS access enabled.</span>
+  <div class="rb-actions">
+    <button class="gold" id="editToggleBtn" onclick="toggleInlineEdit()">✏️ Enable Live Editing</button>
+    <button class="teal" onclick="saveAllEdits()">💾 Save Content</button>
+    <button class="ghost" onclick="goTo('dashboard')">📊 Dashboard</button>
+    <button class="ghost" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
+<div class="role-bar student" id="studentBar">
+  <span>🎓 <strong>Student:</strong> <span id="studentBarName"></span></span>
+  <div class="rb-actions">
+    <button class="teal" onclick="goTo('payment')">💳 Payment</button>
+    <button class="ghost" onclick="goTo('leave')">📝 Leave Form</button>
+    <button class="ghost" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
+
+<!-- ===================== TOPBAR ===================== -->
+<div class="topbar">
+  <div class="tb-left">
+    <a href="tel:+94754797973">📞 <span>0754797973</span></a>
+    <a href="mailto:akramsalami629@gmail.com">✉️ <span>akramsalami629@gmail.com</span></a>
+    <a><span>📍 Brain Thuraichenai, Valaichenai, Batticaloa, Sri Lanka</span></a>
+  </div>
+  <div class="tb-right">
+    <div class="anim-toggle" style="display:flex;align-items:center;gap:.4rem;font-size:.72rem;opacity:.9;">
+      <span>Animations</span>
+      <div class="switch" id="animSwitch" onclick="toggleAnim()" style="position:relative;width:36px;height:20px;background:rgba(255,255,255,.15);border-radius:999px;cursor:pointer;border:1px solid var(--glass-border);"></div>
+    </div>
+    <div class="lang-switch">
+      <button data-lang="ar" onclick="setLang('ar')">AR</button>
+      <button data-lang="en" onclick="setLang('en')" class="active">EN</button>
+      <button data-lang="ta" onclick="setLang('ta')">TA</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== HEADER / NAV ===================== -->
+<header class="site">
+  <div class="nav-wrap">
+    <div class="brand" onclick="goTo('home')">
+      <svg width="44" height="44" viewBox="0 0 100 100" style="filter:drop-shadow(0 0 8px var(--teal-neon));">
+        <circle cx="50" cy="50" r="48" fill="#05443B" stroke="#00F5D4" stroke-width="2"/>
+        <polygon points="50,15 61,39 87,39 66,55 74,80 50,65 26,80 34,55 13,39 39,39" fill="none" stroke="#FFD700" stroke-width="2.2"/>
+        <path d="M38 58 Q50 48 62 58 L62 66 Q50 58 38 66 Z" fill="#FFD700"/>
+        <rect x="48" y="30" width="4" height="20" fill="#FFD700"/>
+      </svg>
+      <div>
+        <h1><span class="i18n ar">مدرسة الحسيمة</span><span class="i18n en">Mathrasathul Husaima</span><span class="i18n ta">மத்ரஸத்துல் ஹுஸைமா</span></h1>
+        <small><span class="i18n ar">STUDENT PORTAL</span><span class="i18n en">STUDENT PORTAL</span><span class="i18n ta">STUDENT PORTAL</span></small>
+      </div>
+    </div>
+
+    <button class="hamburger" onclick="document.getElementById('mainNav').classList.toggle('open')">☰</button>
+
+    <nav class="main" id="mainNav"><!-- rendered by script.js based on role --></nav>
+
+    <div class="nav-actions">
+      <button class="btn btn-outline" id="loginNavBtn" onclick="goTo('login')">
+        <span class="i18n ar">دخول</span><span class="i18n en">Login</span><span class="i18n ta">உள்நுழை</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="mainContainer">
+
+<!-- ===================== HOME ===================== -->
+<section class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-sub">
+      <span class="i18n ar">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</span>
+      <span class="i18n en">EST. FOR KNOWLEDGE, FAITH &amp; CHARACTER</span>
+      <span class="i18n ta">அறிவு, நம்பிக்கை &amp; பண்பாடு</span>
+    </div>
+    <h2 class="hero-title">
+      <span class="i18n ar">مدرسة الحسيمة</span>
+      <span class="i18n en">Mathrasathul Husaima</span>
+      <span class="i18n ta">மத்ரஸத்துல் ஹுஸைமா</span>
+    </h2>
+    <p class="hero-tagline">
+      <span class="i18n ar">صرحٌ علميٌّ يجمع بين أصالة العلوم الشرعية وحداثة الإدارة الرقمية، في فالايتشيناي – باتيكالوا.</span>
+      <span class="i18n en">An academic institution combining authentic Islamic scholarship with a modern digital student portal, in Valaichenai, Batticaloa.</span>
+      <span class="i18n ta">வலைச்சேனை, மட்டக்களப்பில் அமைந்த இஸ்லாமிய கல்வி நிறுவனம்.</span>
+    </p>
+    <div class="hero-ctas">
+      <button class="btn btn-gold" onclick="goTo('admission')">
+        <span class="i18n ar">تقديم طلب التحاق</span><span class="i18n en">Apply for Admission</span><span class="i18n ta">சேர்க்கைக்கு விண்ணப்பிக்க</span>
+      </button>
+      <button class="btn btn-outline" onclick="goTo('login')">
+        <span class="i18n ar">دخول الطالب</span><span class="i18n en">Student / Admin Login</span><span class="i18n ta">உள்நுழைவு</span>
+      </button>
+    </div>
+    <div class="stat-strip">
+      <div class="stat"><b>480+</b><span class="i18n ar">طالب وطالبة</span><span class="i18n en">Students</span><span class="i18n ta">மாணவர்கள்</span></div>
+      <div class="stat"><b>42</b><span class="i18n ar">عضو تدريس</span><span class="i18n en">Staff Members</span><span class="i18n ta">ஊழியர்கள்</span></div>
+      <div class="stat"><b>18</b><span class="i18n ar">سنة عطاء</span><span class="i18n en">Years</span><span class="i18n ta">ஆண்டுகள்</span></div>
+      <div class="stat"><b>9</b><span class="i18n ar">برامج علمية</span><span class="i18n en">Programs</span><span class="i18n ta">திட்டங்கள்</span></div>
+    </div>
+  </div>
+
+  <section class="block reveal">
+    <div class="section-head">
+      <span class="eyebrow i18n ar">لماذا نحن</span><span class="eyebrow i18n en">WHY CHOOSE US</span><span class="eyebrow i18n ta">ஏன் நாங்கள்</span>
+      <h2><span class="i18n ar">نظام تعليمي وإداري متكامل</span><span class="i18n en">A Fully Integrated Student System</span><span class="i18n ta">ஒருங்கிணைந்த கல்வி அமைப்பு</span></h2>
+      <p><span class="i18n ar">من الالتحاق إلى الإجازات والمدفوعات — كل شيء رقمي وآمن.</span><span class="i18n en">From admission to leave requests and fee payments — everything is digital and secure.</span><span class="i18n ta">சேர்க்கை முதல் கட்டணம் வரை — அனைத்தும் டிஜிட்டல்.</span></p>
+    </div>
+    <div class="grid grid-4">
+      <div class="card value-card">
+        <h4><span class="i18n ar">حساب طالب</span><span class="i18n en">Student Login</span><span class="i18n ta">மாணவர் உள்நுழைவு</span></h4>
+        <p style="font-size:.85rem;color:var(--text-sub)"><span class="i18n ar">دخول آمن برقم الطالب</span><span class="i18n en">Secure sign-in with your Index Number</span><span class="i18n ta">குறியீட்டு எண் மூலம் நுழைவு</span></p>
+      </div>
+      <div class="card value-card">
+        <h4><span class="i18n ar">إجازة عبر واتساب</span><span class="i18n en">WhatsApp Leave</span><span class="i18n ta">வாட்ஸ்அப் விடுப்பு</span></h4>
+        <p style="font-size:.85rem;color:var(--text-sub)"><span class="i18n ar">إرسال فوري لطلب الإجازة</span><span class="i18n en">Instant leave requests sent to admin</span><span class="i18n ta">உடனடி விடுப்பு கோரிக்கை</span></p>
+      </div>
+      <div class="card value-card">
+        <h4><span class="i18n ar">دفع وإيصال PDF</span><span class="i18n en">Payments &amp; PDF Receipts</span><span class="i18n ta">கட்டணம் &amp; ரசீது</span></h4>
+        <p style="font-size:.85rem;color:var(--text-sub)"><span class="i18n ar">إيصال رقمي بعد التأكيد</span><span class="i18n en">Digital receipt once admin confirms</span><span class="i18n ta">உறுதிப்படுத்திய பின் ரசீது</span></p>
+      </div>
+      <div class="card value-card">
+        <h4><span class="i18n ar">لوحة تحكم الإدارة</span><span class="i18n en">Admin Dashboard</span><span class="i18n ta">நிர்வாக பலகை</span></h4>
+        <p style="font-size:.85rem;color:var(--text-sub)"><span class="i18n ar">إدارة كاملة للمحتوى والطلاب</span><span class="i18n en">Full control over content &amp; students</span><span class="i18n ta">முழு கட்டுப்பாடு</span></p>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- ===================== ABOUT ===================== -->
+<section class="page" id="page-about">
+  <section class="block">
+    <div class="section-head">
+      <span class="eyebrow i18n ar">من نحن</span><span class="eyebrow i18n en">ABOUT US</span><span class="eyebrow i18n ta">எங்களைப் பற்றி</span>
+      <h2><span class="i18n ar">مدرسة الحسيمة الإسلامية</span><span class="i18n en">Mathrasathul Husaima Islamic College</span><span class="i18n ta">மத்ரஸத்துல் ஹுஸைமா</span></h2>
+    </div>
+    <div class="grid grid-2" style="align-items:center;margin-bottom:2.5rem;">
+      <div>
+        <p class="i18n ar">تأسست مدرسة الحسيمة في فالايتشيناي بمحافظة باتيكالوا لتكون منارة علمية تجمع بين حفظ القرآن الكريم، ودراسة العلوم الشرعية، والتعليم الأكاديمي الحديث.</p>
+        <p class="i18n en">Mathrasathul Husaima was founded in Valaichenai, Batticaloa, to serve as a center of learning that brings together Qur'an memorization, classical Islamic sciences, and modern academic education.</p>
+        <p class="i18n ta">மத்ரஸத்துல் ஹுஸைமா வலைச்சேனை, மட்டக்களப்பில் நிறுவப்பட்டது. குர்ஆன் மனனம், இஸ்லாமிய கல்வி மற்றும் நவீன கல்வியை ஒருங்கிணைத்து மாணவர்களை வளர்க்கிறோம்.</p>
+      </div>
+      <div class="card" style="background:rgba(5,68,59,.4);border-color:var(--teal-neon);">
+        <h4 style="color:var(--teal-neon)"><span class="i18n ar">رسالتنا</span><span class="i18n en">Our Mission</span><span class="i18n ta">எமது நோக்கம்</span></h4>
+        <p style="opacity:.9;margin-bottom:1rem;" class="i18n ar">إعداد جيل متمسك بدينه، متقن لعلمه، نافع لأمته.</p>
+        <p style="opacity:.9;margin-bottom:1rem;" class="i18n en">Raising a generation rooted in faith, excellent in knowledge, and beneficial to society.</p>
+        <p style="opacity:.9;margin-bottom:1rem;" class="i18n ta">நம்பிக்கையிலும் அறிவிலும் சிறந்த சமூகத்திற்கு பயனுள்ள தலைமுறையை உருவாக்குதல்.</p>
+        <h4 style="color:var(--teal-neon)"><span class="i18n ar">رؤيتنا</span><span class="i18n en">Our Vision</span><span class="i18n ta">எமது தொலைநோக்கு</span></h4>
+        <p style="opacity:.9" class="i18n ar">أن نكون الصرح التعليمي الأول في المنطقة تميّزًا وريادة.</p>
+        <p style="opacity:.9" class="i18n en">To be the leading educational institution in the region.</p>
+        <p style="opacity:.9" class="i18n ta">பிராந்தியத்தின் முன்னணி கல்வி நிறுவனமாக விளங்குதல்.</p>
+      </div>
+    </div>
+    <div class="grid grid-4">
+      <div class="card value-card"><h4><span class="i18n ar">الإخلاص</span><span class="i18n en">Sincerity</span><span class="i18n ta">நேர்மை</span></h4></div>
+      <div class="card value-card"><h4><span class="i18n ar">القدوة</span><span class="i18n en">Role Modeling</span><span class="i18n ta">முன்மாதிரி</span></h4></div>
+      <div class="card value-card"><h4><span class="i18n ar">التميّز</span><span class="i18n en">Excellence</span><span class="i18n ta">சிறப்பு</span></h4></div>
+      <div class="card value-card"><h4><span class="i18n ar">الرحمة</span><span class="i18n en">Compassion</span><span class="i18n ta">கருணை</span></h4></div>
+    </div>
+  </section>
+</section>
+
+<!-- ===================== GALLERY ===================== -->
+<section class="page" id="page-gallery">
+  <section class="block">
+    <div class="section-head">
+      <span class="eyebrow i18n ar">لقطات</span><span class="eyebrow i18n en">SNAPSHOTS</span><span class="eyebrow i18n ta">காட்சிகள்</span>
+      <h2><span class="i18n ar">معرض المدرسة</span><span class="i18n en">Gallery</span><span class="i18n ta">தொகுப்பு</span></h2>
+      <p><span class="i18n ar">تُدار الصور من لوحة تحكم الإدارة.</span><span class="i18n en">Photos are managed live from the Admin Dashboard.</span><span class="i18n ta">புகைப்படங்கள் நிர்வாக பலகையில் இருந்து நிர்வகிக்கப்படும்.</span></p>
+    </div>
+    <div class="grid grid-4" id="galleryGrid"></div>
+  </section>
+</section>
+
+<!-- ===================== EVENTS ===================== -->
+<section class="page" id="page-events">
+  <section class="block">
+    <div class="section-head">
+      <span class="eyebrow i18n ar">التقويم</span><span class="eyebrow i18n en">CALENDAR</span><span class="eyebrow i18n ta">நாட்காட்டி</span>
+      <h2><span class="i18n ar">الفعاليات القادمة</span><span class="i18n en">Upcoming Events</span><span class="i18n ta">வரவிருக்கும் நிகழ்வுகள்</span></h2>
+    </div>
+    <div class="card" id="eventsList"></div>
+  </section>
+</section>
+
+<!-- ===================== ADMISSION (guest only) ===================== -->
+<section class="page" id="page-admission">
+  <section class="block">
+    <div class="section-head">
+      <span class="eyebrow i18n ar">التسجيل</span><span class="eyebrow i18n en">JOIN US</span><span class="eyebrow i18n ta">சேர்க்கை</span>
+      <h2><span class="i18n ar">طلب الالتحاق</span><span class="i18n en">Admission Enquiry</span><span class="i18n ta">சேர்க்கை விண்ணப்பம்</span></h2>
+      <p><span class="i18n en">Submit your details and our admissions office will reach out on WhatsApp.</span>
+         <span class="i18n ar">أرسل بياناتك وسيتواصل معك مكتب القبول عبر واتساب.</span>
+         <span class="i18n ta">உங்கள் விவரங்களை அனுப்பவும், சேர்க்கை அலுவலகம் தொடர்பு கொள்ளும்.</span></p>
+    </div>
+    <form class="card form-grid" style="max-width:640px;margin:0 auto;" onsubmit="return submitAdmissionForm(event)">
+      <div>
+        <label class="f-label">Student Full Name</label>
+        <input class="f-input" id="admName" required>
+      </div>
+      <div class="f-row-2">
+        <div><label class="f-label">Age</label><input class="f-input" type="number" min="3" max="25"></div>
+        <div><label class="f-label">Guardian Contact</label><input class="f-input" type="tel" required></div>
+      </div>
+      <div><label class="f-label">Preferred Program</label>
+        <select class="f-input">
+          <option>Qur'an Hifz</option><option>Islamic Studies</option><option>Academic Stream</option>
+        </select>
+      </div>
+      <button class="btn btn-gold" type="submit">Submit Enquiry</button>
+    </form>
+  </section>
+</section>
+
+<!-- ===================== TEAM ===================== -->
+<section class="page" id="page-team">
+  <section class="block">
+    <div class="section-head">
+      <span class="eyebrow i18n ar">الكادر</span><span class="eyebrow i18n en">OUR TEAM</span><span class="eyebrow i18n ta">குழு</span>
+      <h2><span class="i18n ar">فريقنا التعليمي</span><span class="i18n en">Faculty &amp; Staff</span><span class="i18n ta">ஆசிரியர் குழு</span></h2>
+    </div>
+    <div class="grid grid-4">
+      <div class="card value-card"><h4>Sheikh Akram Salami</h4><p style="font-size:.82rem;color:var(--text-sub)">Principal</p></div>
+      <div class="card value-card"><h4>Ustadha Noor Al-Huda</h4><p style="font-size:.82rem;color:var(--text-sub)">Vice Principal</p></div>
+      <div class="card value-card"><h4>Ustad Bilal Hussain</h4><p style="font-size:.82rem;color:var(--text-sub)">Head of Science</p></div>
+      <div class="card value-card"><h4>Ustad Mohammed Omar</h4><p style="font-size:.82rem;color:var(--text-sub)">Hifz Head</p></div>
+    </div>
+  </section>
+</section>
+
+<!-- ===================== CONTACT ===================== -->
+<section class="page" id="page-contact">
+  <section class="block">
+    <div class="section-head">
+      <span class="eyebrow i18n en">GET IN TOUCH</span><span class="eyebrow i18n ar">تواصل معنا</span><span class="eyebrow i18n ta">தொடர்பு</span>
+      <h2><span class="i18n en">Contact Us</span><span class="i18n ar">تواصل معنا</span><span class="i18n ta">தொடர்பு கொள்ள</span></h2>
+    </div>
+    <form class="card form-grid" style="max-width:640px;margin:0 auto;" onsubmit="return submitContactForm(event)">
+      <div class="f-row-2">
+        <div><label class="f-label">Name</label><input class="f-input" required></div>
+        <div><label class="f-label">Phone</label><input class="f-input" type="tel"></div>
+      </div>
+      <div><label class="f-label">Message</label><textarea class="f-input" required></textarea></div>
+      <button class="btn btn-gold" type="submit">Send Message</button>
+    </form>
+  </section>
+</section>
+
+<!-- ===================== LOGIN ===================== -->
+<section class="page" id="page-login">
+  <section class="block">
+    <div class="login-wrap card">
+      <div class="login-tabs">
+        <button id="tabStudentLogin" class="active" onclick="switchLoginTab('student')">Student Login</button>
+        <button id="tabAdminLogin" onclick="switchLoginTab('admin')">Admin Login</button>
+      </div>
+
+      <form id="studentLoginForm" class="form-grid" onsubmit="return submitStudentLogin(event)">
+        <div>
+          <label class="f-label">Index Number (Username)</label>
+          <input class="f-input" id="stuLoginIndex" placeholder="e.g. 001" required>
+        </div>
+        <div>
+          <label class="f-label">Password</label>
+          <input class="f-input" id="stuLoginPass" type="password" placeholder="Same as your Index Number" required>
+        </div>
+        <button class="btn btn-gold" type="submit">Login</button>
+        <p class="login-hint">Your Index Number is used as both your Username and Password.</p>
+      </form>
+
+      <form id="adminLoginForm" class="form-grid" style="display:none;" onsubmit="return submitAdminLogin(event)">
+        <div>
+          <label class="f-label">Admin Username</label>
+          <input class="f-input" id="adminLoginUser" required>
+        </div>
+        <div>
+          <label class="f-label">Admin Password</label>
+          <input class="f-input" id="adminLoginPass" type="password" required>
+        </div>
+        <button class="btn btn-maroon" type="submit">Login as Admin</button>
+      </form>
+    </div>
+  </section>
+</section>
+
+<!-- ===================== LEAVE FORM (student) ===================== -->
+<section class="page" id="page-leave">
+  <section class="block">
+    <div class="section-head">
+      <span class="eyebrow i18n en">LEAVE REQUEST</span><span class="eyebrow i18n ar">طلب إجازة</span><span class="eyebrow i18n ta">விடுப்பு கோரிக்கை</span>
+      <h2><span class="i18n en">Submit a Leave Form</span><span class="i18n ar">تقديم طلب إجازة</span><span class="i18n ta">விடுப்பு படிவம்</span></h2>
+      <p><span class="i18n en">Your request is sent instantly to the school administrator via WhatsApp — no email involved.</span>
+         <span class="i18n ar">يُرسل طلبك فورًا إلى إدارة المدرسة عبر واتساب.</span>
+         <span class="i18n ta">உங்கள் கோரிக்கை உடனடியாக வாட்ஸ்அப் மூலம் அனுப்பப்படும்.</span></p>
+    </div>
+    <form class="card form-grid" style="max-width:640px;margin:0 auto;" onsubmit="return submitLeaveForm(event)">
+      <div class="f-row-2">
+        <div><label class="f-label">Student Name</label><input class="f-input" id="leaveName" readonly></div>
+        <div><label class="f-label">Index Number</label><input class="f-input" id="leaveIndex" readonly></div>
+      </div>
+      <div><label class="f-label">Leave Date</label><input class="f-input" type="date" id="leaveDate" required></div>
+      <div><label class="f-label">Reason</label><textarea class="f-input" id="leaveReason" required></textarea></div>
+      <button class="btn btn-gold" type="submit">📲 Send via WhatsApp</button>
+    </form>
+  </section>
+</section>
+
+<!-- ===================== PAYMENT (student) ===================== -->
+<section class="page" id="page-payment">
+  <section class="block">
+    <div class="section-head">
+      <span class="eyebrow i18n en">FEE PAYMENT</span><span class="eyebrow i18n ar">الدفع</span><span class="eyebrow i18n ta">கட்டணம்</span>
+      <h2><span class="i18n en">Payment</span><span class="i18n ar">الدفع</span><span class="i18n ta">கட்டணம்</span></h2>
+    </div>
+
+    <div class="grid grid-2" style="align-items:start;">
+      <form class="card form-grid" onsubmit="return submitPaymentForm(event)">
+        <div class="mode-toggle">
+          <label><input type="radio" name="payMode" value="offline" checked><span>🏦 Offline (Bank Transfer)</span></label>
+          <label><input type="radio" name="payMode" value="online"><span>💳 Online</span></label>
+        </div>
+        <div class="f-row-2">
+          <div><label class="f-label">Fee Amount (LKR)</label><input class="f-input" id="payFee" type="number" min="1" required></div>
+          <div><label class="f-label">Payment Date</label><input class="f-input" type="date" id="payDate" required></div>
+        </div>
+        <div><label class="f-label">Parent / Guardian Name</label><input class="f-input" id="payParent" required></div>
+        <p style="font-size:.78rem;color:var(--text-sub)">Bank: Sampath Bank, Valaichenai — Account No: <b id="acc">85690131</b>
+          <button type="button" class="icon-btn" style="width:auto;padding:0 .5rem;" onclick="navigator.clipboard?.writeText('85690131');toast('Account number copied.')">Copy</button>
+        </p>
+        <button class="btn btn-gold" type="submit">📲 Submit &amp; Notify Admin</button>
+      </form>
+
+      <div>
+        <h4 style="margin-bottom:1rem;">My Payment Requests</h4>
+        <div id="myPaymentsList"></div>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- ===================== ADMIN DASHBOARD ===================== -->
+<section class="page" id="page-dashboard">
+  <section class="block">
+    <div class="section-head" style="text-align:left;max-width:none;">
+      <span class="eyebrow i18n en">ADMIN</span>
+      <h2>Dashboard</h2>
+      <p>Manage students, gallery, events, payments and leave requests.</p>
+    </div>
+
+    <div class="dash-tabs">
+      <button class="active" data-tab="students" onclick="switchDashTab('students')">👤 Students</button>
+      <button data-tab="gallery" onclick="switchDashTab('gallery')">🖼️ Gallery</button>
+      <button data-tab="events" onclick="switchDashTab('events')">📅 Events</button>
+      <button data-tab="payments" onclick="switchDashTab('payments')">💳 Payments</button>
+      <button data-tab="leaves" onclick="switchDashTab('leaves')">📝 Leave Requests</button>
+      <button data-tab="content" onclick="switchDashTab('content')">🧩 Content Editor</button>
+    </div>
+
+    <!-- Students -->
+    <div class="dash-pane active" id="dash-students">
+      <div class="card" style="margin-bottom:1.4rem;">
+        <h4 style="margin-bottom:1rem;font-size:1rem;">Add Student (Index = Username &amp; Password)</h4>
+        <form class="form-grid" onsubmit="return addStudent(event)">
+          <div class="f-row-2">
+            <div><label class="f-label">Index Number</label><input class="f-input" id="newStuIndex" required></div>
+            <div><label class="f-label">Full Name</label><input class="f-input" id="newStuName" required></div>
+          </div>
+          <div class="f-row-2">
+            <div><label class="f-label">Class / Department</label><input class="f-input" id="newStuClass"></div>
+            <div><label class="f-label">Contact Number</label><input class="f-input" id="newStuContact"></div>
+          </div>
+          <button class="btn btn-gold" type="submit">+ Add Student</button>
+        </form>
+      </div>
+      <div id="dashStudentsList"></div>
+    </div>
+
+    <!-- Gallery -->
+    <div class="dash-pane" id="dash-gallery">
+      <div class="card" style="margin-bottom:1.4rem;">
+        <h4 style="margin-bottom:1rem;font-size:1rem;">Add Photo</h4>
+        <form class="form-grid" onsubmit="return addGalleryItem(event)">
+          <div><label class="f-label">Image URL (optional — leave blank for a color tile)</label><input class="f-input" id="newGalUrl" placeholder="https://..."></div>
+          <div><label class="f-label">Caption</label><input class="f-input" id="newGalCaption" required></div>
+          <button class="btn btn-gold" type="submit">+ Add Photo</button>
+        </form>
+      </div>
+      <div id="dashGalleryList"></div>
+    </div>
+
+    <!-- Events -->
+    <div class="dash-pane" id="dash-events">
+      <div class="card" style="margin-bottom:1.4rem;">
+        <h4 style="margin-bottom:1rem;font-size:1rem;">Add Event</h4>
+        <form class="form-grid" onsubmit="return addEvent(event)">
+          <div class="f-row-2">
+            <div><label class="f-label">Date</label><input class="f-input" type="date" id="newEvDate" required></div>
+            <div><label class="f-label">Title</label><input class="f-input" id="newEvTitle" required></div>
+          </div>
+          <div><label class="f-label">Description</label><textarea class="f-input" id="newEvDesc"></textarea></div>
+          <button class="btn btn-gold" type="submit">+ Add Event</button>
+        </form>
+      </div>
+      <div id="dashEventsList"></div>
+    </div>
+
+    <!-- Payments -->
+    <div class="dash-pane" id="dash-payments">
+      <p style="color:var(--text-sub);font-size:.85rem;margin-bottom:1rem;">Confirm a payment after verifying it on WhatsApp — the student will then be able to view and download their PDF receipt.</p>
+      <div id="dashPaymentsList"></div>
+    </div>
+
+    <!-- Leave Requests -->
+    <div class="dash-pane" id="dash-leaves">
+      <div id="dashLeavesList"></div>
+    </div>
+
+    <!-- Content Editor -->
+    <div class="dash-pane" id="dash-content">
+      <div class="card">
+        <h4 style="margin-bottom:.8rem;font-size:1rem;">Live Content Editor</h4>
+        <p style="color:var(--text-sub);font-size:.85rem;margin-bottom:1rem;">
+          Enable live editing (top banner), then click directly on any heading or paragraph across the site to edit it in place. Press "Save Content" when done — changes persist for all visitors of this browser/deployment's storage.
+        </p>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+          <button class="btn btn-gold btn-sm" onclick="toggleInlineEdit()">✏️ Toggle Live Editing</button>
+          <button class="btn btn-outline btn-sm" onclick="saveAllEdits()">💾 Save Content</button>
+          <button class="btn btn-maroon btn-sm" onclick="resetContent()">↺ Reset to Defaults</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>
+
+</main>
+
+<!-- ===================== RECEIPT MODAL ===================== -->
+<div class="modal-overlay" id="receiptModal">
+  <div class="modal-box receipt-card">
+    <button class="modal-close" onclick="closeModal('receiptModal')">✕</button>
+    <div class="receipt-head">
+      <h3 style="font-size:1.2rem;">Mathrasathul Husaima</h3>
+      <p style="font-size:.75rem;color:var(--gold-neon);letter-spacing:.08em;">OFFICIAL PAYMENT RECEIPT</p>
+    </div>
+    <div class="receipt-row"><span>Receipt Ref</span><b id="rcptId"></b></div>
+    <div class="receipt-row"><span>Student Name</span><b id="rcptName"></b></div>
+    <div class="receipt-row"><span>Index Number</span><b id="rcptIndex"></b></div>
+    <div class="receipt-row"><span>Parent Name</span><b id="rcptParent"></b></div>
+    <div class="receipt-row"><span>Payment Mode</span><b id="rcptMode"></b></div>
+    <div class="receipt-row"><span>Date</span><b id="rcptDate"></b></div>
+    <div class="receipt-amount"><b id="rcptFee"></b></div>
+    <div style="display:flex;gap:.6rem;margin-top:1rem;">
+      <button class="btn btn-gold" style="flex:1;" onclick="downloadReceiptPdf()">⬇️ Download PDF</button>
+      <button class="btn btn-outline" style="flex:1;" onclick="shareReceipt()">📤 Share Receipt</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TOAST ===================== -->
+<div class="toast" id="toast"></div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="foot-grid">
+    <div>
+      <h5>Mathrasathul Husaima</h5>
+      <p style="opacity:.8;font-size:.82rem;">An Islamic academic institution in Valaichenai, Batticaloa, Sri Lanka.</p>
+    </div>
+    <div>
+      <h5>Quick Links</h5>
+      <a onclick="goTo('about')" style="cursor:pointer">About</a>
+      <a onclick="goTo('gallery')" style="cursor:pointer">Gallery</a>
+      <a onclick="goTo('events')" style="cursor:pointer">Events</a>
+      <a onclick="goTo('contact')" style="cursor:pointer">Contact</a>
+    </div>
+    <div>
+      <h5>Contact</h5>
+      <a href="tel:+94754797973">0754797973</a>
+      <a href="mailto:akramsalami629@gmail.com">akramsalami629@gmail.com</a>
+    </div>
+    <div>
+      <h5>Follow</h5>
+      <a href="#" onclick="return false;">Facebook · Mohammed Akram Salami</a>
+      <a href="#" onclick="return false;">YouTube · Mohammed Akram</a>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    © 2026 Mathrasathul Husaima — All rights reserved.
+    <span class="foot-credit">Website Creator: Mohammed Rasith (Email: <a href="mailto:mohammedrasith27@gmail.com">mohammedrasith27@gmail.com</a>)</span>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
