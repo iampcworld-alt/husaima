@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Payment Approval</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 md:p-8">
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Madrasa Payment Admin Portal</h2>
+    
+    <!-- Login Section -->
+    <div id="login-sec" class="flex gap-2 mb-6">
+      <input type="password" id="admin-pass" placeholder="Admin Passcode Enter பண்ணவும்" class="border p-2 rounded-lg w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <button onclick="loginAdmin()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold">Login</button>
+    </div>
+
+    <!-- Dashboard Content Section -->
+    <div id="dash-sec" class="hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-200 text-gray-700">
+              <th class="p-3 border">Receipt ID</th>
+              <th class="p-3 border">Student Info</th>
+              <th class="p-3 border">Amount</th>
+              <th class="p-3 border">Status</th>
+              <th class="p-3 border">Action</th>
+            </tr>
+          </thead>
+          <tbody id="payment-list"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://girikmjwfydntdpxoncz.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_mZIT_zeBMDMa_mwGqVtEww_fJSY3NMl"; 
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    function loginAdmin() {
+      const pass = document.getElementById('admin-pass').value;
+      if(pass === "admin123") {
+        document.getElementById('login-sec').classList.add('hidden');
+        document.getElementById('dash-sec').classList.remove('hidden');
+        loadPayments();
+      } else {
+        alert("தவறான கடவுச்சொல்!");
+      }
+    }
+
+    async function loadPayments() {
+      const { data, error } = await supabaseClient
+        .from('payments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      const tbody = document.getElementById('payment-list');
+      tbody.innerHTML = '';
+
+      if (data && data.length > 0) {
+        data.forEach(item => {
+          const row = `
+            <tr class="border-b hover:bg-gray-50">
+              <td class="p-3 border font-bold text-gray-800">${item.receipt_id}</td>
+              <td class="p-3 border">${item.student_name} <br><span class="text-xs text-gray-500">Index: ${item.index_no}</span></td>
+              <td class="p-3 border font-semibold">Rs. ${item.amount}</td>
+              <td class="p-3 border">
+                <span class="px-2 py-1 rounded-full text-xs font-bold ${item.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                  ${item.status}
+                </span>
+              </td>
+              <td class="p-3 border">
+                ${item.status === 'pending' 
+                  ? `<button onclick="approvePayment('${item.receipt_id}')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">Approve</button>` 
+                  : `<span class="text-xs text-gray-400 font-semibold">Confirmed</span>`}
+              </td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+      } else {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">தகவல்கள் எதுவும் இல்லை.</td></tr>`;
+      }
+    }
+
+    async function approvePayment(receiptId) {
+      const { error } = await supabaseClient
+        .from('payments')
+        .update({ status: 'confirmed' })
+        .eq('receipt_id', receiptId);
+
+      if(!error) {
+        alert('Receipt Successfully Approved!');
+        loadPayments();
+      } else {
+        alert('Error approving payment!');
+      }
+    }
+  </script>
+</body>
+</html>
