@@ -1,3 +1,9 @@
+```[cite: 4]
+
+---
+
+### 2. JavaScript Code (`script.js`)[cite: 5]
+```javascript
 /* =========================================================
    Mathrasathul Husaima — Student Portal — script.js
    Netlify-friendly: no server, all "backend" state lives in
@@ -88,15 +94,6 @@ function logout() {
   renderShell();
 }
 
-/* ---------------- DYNAMIC STUDENT COUNT ---------------- */
-function updateHomeStudentCount() {
-  const students = lsGet(LS_KEYS.students, []);
-  const countElement = document.getElementById('statStudentsCount');
-  if (countElement) {
-    countElement.textContent = students.length;
-  }
-}
-
 /* ---------------- NAV CONFIG (RBAC) ---------------- */
 const NAV_ITEMS = [
   { id: 'home', ar: 'الرئيسية', en: 'Home', ta: 'முகப்பு', roles: ['guest', 'student', 'admin'] },
@@ -178,7 +175,6 @@ function goTo(page) {
   if (page === 'payment') renderStudentPayments();
   if (page === 'leave') prefillLeaveForm();
   if (page === 'dashboard') renderDashboard();
-  if (page === 'home') updateHomeStudentCount();
 }
 
 /* ---------------- ANIMATION TOGGLE ---------------- */
@@ -552,7 +548,6 @@ function addStudent(e) {
   students.push({ index, name, cls, contact });
   lsSet(LS_KEYS.students, students);
   renderDashStudents();
-  updateHomeStudentCount(); // மாணவர் எண்ணிக்கை முகப்புப் பக்கத்தில் உடனே மாற
   e.target.reset();
   toast('Student added. Login = index number for both fields.');
   return false;
@@ -567,7 +562,6 @@ function editStudent(i) {
   students[i] = { ...s, name: name.trim() || s.name, cls, contact };
   lsSet(LS_KEYS.students, students);
   renderDashStudents();
-  updateHomeStudentCount();
 }
 function deleteStudent(i) {
   const students = lsGet(LS_KEYS.students, []);
@@ -575,7 +569,6 @@ function deleteStudent(i) {
   students.splice(i, 1);
   lsSet(LS_KEYS.students, students);
   renderDashStudents();
-  updateHomeStudentCount(); // மாணவரை நீக்கிய பின் எண்ணிக்கையை குறைக்க
 }
 
 /* -- Gallery CRUD -- */
@@ -734,6 +727,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderGallery();
   renderEvents();
   initReveal();
-  updateHomeStudentCount(); // பக்கம் லோட் ஆகும் போது மாணவர் எண்ணிக்கையை அப்டேட் செய்ய
   goTo('home');
 });
+```[cite: 5]
